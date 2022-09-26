@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Download{% endblock %}
+
+{% block content %}
+    <style>
+        td{
+            font-size: 12px;
+        }
+    </style>
+    <div class="ui header">Download</div><br>
+    <p>You can download our source data from the table below:</p>
+    <table class="ui celled striped table">
+        <thead>
+            <th>Names</th>
+            <th>Description</th>
+            <th>Updated date</th>
+            <th>Download</th>
+        </thead>
+        <tbody>
+            {% for i in files %}
+                <tr>
+                    <td>{{ i.F_name }}</td>
+                    <td>{{ i.F_description }}</td>
+                    <td>{{ i.Date_modified.date }}</td>
+                    <td>
+                        <a href="/media/{{ i.F_upload }}/">
+                            <i class="cloud download icon"></i>
+                            Download
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td>
+                        No files for download currently!
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+{% endblock %}

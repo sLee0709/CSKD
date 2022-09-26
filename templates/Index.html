@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+{% block head_title %} - Home{% endblock %}
+
+<body>
+
+<!--abbr display-->
+
+{% block content %}
+<div class="ui two column grid">
+            <div class="ten wide column">
+                <div class="ui segment">
+                    <div class="ui container">
+                        <img class="ui fluid image" src="/media/imgs/csskd.png">
+                        <div class="ui divider"></div>
+                    </div>
+                    <div class="ui fluid text container">
+                        <h3>Welcome to CSSKD!</h3>
+                        <p style="font-size: 12px" align="justify">This is a database which includes not only biological information of cytokines involved in cytokine storm, but also it contains clinical informaton of patients who suffered from cytokine storm syndrome.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="six wide column">
+
+                <!--Quick search-->
+                <div class="row">
+                    <div class="ui card">
+                        <div class="content">
+                            <div class="header">Quick search</div>
+                        </div>
+                        <div class="content">
+                            <form method="GET", id="quick_search_form" target="_blank" action="{% url 'simple_search' %}">
+                                <div class="ui small action input">
+                                    <input type="text" id="quick_search_input" name="q" value="{{ request.GET.q }}" placeholder="Search...">
+                                    <button class="ui icon button" id="submit_search_form" onclick="search_form_submission()">
+                                        <i class="search icon"></i>
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="ui divider"></div>
+                            <p style="font-size: 11px">You can input <b>cytokine names, cytokine family names, or cytokine storm syndrome names</b> here for searching.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui horizontal divider"></div>
+
+                <!--latest news-->
+                <div class="row">
+                    <div class="ui card" id="news_area">
+                        <script>
+
+                            jQuery.fn.limit=function(){
+                                var self = $(".News_detail[limit]");
+                                self.each(function(){
+                                    var objString = jQuery.trim($(this).text());
+                                    var objLength = objString.length;
+                                    var num = $(this).attr("limit");
+                                    if(objLength > num){
+                                        $(this).attr("title",objString);
+                                        objString = $(this).text(objString.substring(0,num) + "...");
+                                    }
+                                })
+                            }
+                            $(function(){
+                                $(document.body).limit();
+                            })
+                        </script>
+                        <div class="content">
+                            <div class="header">Latest News</div>
+                        </div>
+                        <div class="content">
+                            {% for i in sets %}
+                                <a class="News_detail" limit="30" data-title="{{ i.Title }}" data-text="{{ i.Content }}"><b>&diams;&nbsp;</b>{{ i.Title | safe }}</a><br>
+                                <div class="ui small modal" id="news_modal">
+                                    <div class="ui header" id="news_header">
+                                    </div>
+                                    <div class="ui left aligned grid">
+                                        <div class="column">
+                                            <div class="ui stacked segment" style="border: hidden" id="news_content">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p>No News.</p>
+                            {% endfor %}
+                        </div>
+                        <div class="ui content" align="right" id="news_pagination">
+                            {% if sets.has_previous %}
+                                <button class="ui mini icon button" id="previous_news">
+                                    <i class="angle left icon"></i>
+                                </button>
+                            {% else %}
+                                <button class="ui mini disabled icon button">
+                                    <i class="angle left icon"></i>
+                                </button>
+                            {% endif %}
+
+                            {% if sets.has_next %}
+                                <button class="ui mini icon button" id="next_news">
+                                    <i class="angle right icon"></i>
+                                </button>
+                            {% else %}
+                                <button class="ui mini disabled icon button">
+                                    <i class="angle right icon"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                        <script>
+                            $('#next_news').on('click', function () {
+                                {% if sets.has_next %}
+                                    page={{ sets.next_page_number }}
+                                {% endif %}
+                            $.ajax({
+                                type: "GET",
+                                url: './',
+                                data: {
+                                    page: page
+                                },
+                                success: function (data) {
+                                    var next_page = $('#news_area', data)
+                                    $('#news_area').html(next_page)
+                                    },
+                                })
+                            })
+
+                            $('#previous_news').on('click', function () {
+                                {% if sets.has_previous %}
+                                    page={{ sets.previous_page_number }}
+                                {% endif %}
+                            $.ajax({
+                                type: "GET",
+                                url: './',
+                                data: {
+                                    page: page
+                                },
+                                success: function (data) {
+                                    var next_page = $('#news_area', data)
+                                    $('#news_area').html(next_page)
+                                    },
+                                })
+                            })
+
+                            $('.News_detail').on('click', function () {
+                                var news_title = $(this).data('title');
+                                var news_content = $(this).data('text');
+                                $('#news_header').html(news_title)
+                                $('#news_content').html(news_content)
+                                $('#news_modal').modal('show')
+                            })
+                        </script>
+
+                    </div>
+                </div>
+                <div class="ui horizontal divider"></div>
+
+                <!--Citation info-->
+                <div class="row">
+                    <div class="ui card">
+                        <div class="content">
+                            <div class="header">For Citation</div>
+                        </div>
+                        <div class="content">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+
+</body>
+</html>

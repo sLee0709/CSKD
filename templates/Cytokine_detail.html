@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Information - {{ gene_detail.Gene_name }}{% endblock %}
+
+{% block content %}
+    <h2 align="center"></i>Cytokine Information - {{ gene_detail.Gene_name }}</h2>
+    <div class="ui horizontal divider"></div>
+
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    General information
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 20%"><b>Gene:</b></td>
+                <td>{{ gene_detail.Gene_name }}</td>
+            </tr>
+            <tr>
+                <td><b>Protein Name:</b></td>
+                <td>{{ gene_detail.Protein_name }}</td>
+            </tr>
+            <tr>
+                <td><b>Family:</b></td>
+                <td>{{ gene_detail.Family_name }}</td>
+            </tr>
+            <tr>
+                <td><b>Gene-Gene Interactions:</b></td>
+                <td>{{ gene_detail.Target_name }}</td>
+            </tr>
+            <tr>
+                <td><b>PPI Network:</b></td>
+                <td><img src="https://string-db.org/api/image/network?identifiers={{ gene_detail.Gene_name }}" style="width: 100%;height: auto"></td>
+            </tr>
+            <tr>
+                <td><b>External Links:</b></td>
+                <td>
+                    <b><a href="https://www.ncbi.nlm.nih.gov/projects/CCDS/CcdsBrowse.cgi?REQUEST=GENE&DATA={{ gene_detail.Gene_name }}&ORGANISM=9606&BUILDS=CURRENTBUILDS" target="_blank">CCDS Database</a>&nbsp;|&nbsp;</b>
+
+
+                    <b><a href="http://uswest.ensembl.org/Homo_sapiens/Gene/Summary?g={{ gene_detail.Gene_name }}" target="_blank">Ensembl</a>&nbsp;|&nbsp;</b>
+                    <b><a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene={{ gene_detail.Gene_name }}" target="_blank">GeneCards</a></b>
+
+                </td>
+            </tr>
+            <tr>
+                <td><b>Function:</b></td>
+                <td>
+                    <div class="ui reply fluid form">
+                        <textarea style="resize: none;border-style: none;line-height: 1.5" readonly="readonly">{{ gene_detail.Function }}</textarea>
+                    </div>
+                </td>
+
+            </tr>
+            <tr>
+                <td><b>Relevant Research:</b></td>
+                <td>
+                    {% if satisfied_list == 'None' %}
+                        <b>None</b>
+                    {% else %}
+                        {% for pmid in satisfied_list %}
+                            <a class="ui mini blue label" href="../../cases/{{ pmid }}"><b>{{ pmid }}</b></a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br><br>
+
+    <script>
+        $('.ui.accordion')
+            .accordion();
+        $('#detailed_data_table td').popup({
+            on:'click'
+        });
+    </script>
+{% endblock %}

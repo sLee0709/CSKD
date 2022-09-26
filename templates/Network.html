@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Network Construction{% endblock %}
+
+{% block content %}
+
+    <style>
+        #cy{
+            width: auto;
+            height: 500px;
+            display: block;
+            background-color: #F5F5F5;
+        }
+            #box{position: absolute;}
+
+    </style>
+
+    <div id="box" style="left:-300px;top:200px;">
+        <div class="ui card">
+            <div class="content">
+                <div class="header">Control panel</div>
+            </div>
+            <div class="content">
+                <div content="row">
+                    <label style="font-size: 12px;font-weight: bold;">Network style:</label><br>
+                    <div class="ui selection dropdown" id="style_dropdown">
+                        <div id="tar_name" class="text" style="font-size: 12px;font-weight: bold" data-csrf="{{ csrf_token }}">Cose</div>
+                        <i class="dropdown icon"></i>
+                        <div class="menu">
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Circle</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Breadthfirst</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Cose</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Preset</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Grid</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Concentric</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Null</div>
+                            <div class="ui small item" style="font-size: 10px;font-weight: bold">Random</div>
+                        </div>
+                    </div>
+                </div>
+                <div content="row">
+                    <label style="font-size: 12px;font-weight: bold;">Change highlight colors:</label><br>
+                    <div class="ui selection dropdown" id="color_selector">
+                        <div id="tar_name" class="text" style="font-size: 12px;font-weight: bold" data-csrf="{{ csrf_token }}">Default</div>
+                        <i class="dropdown icon"></i>
+                        <div class="menu">
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="default">Default</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="red"><i class="ui red square icon"></i>&nbsp;Red</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="orange"><i class="ui orange square icon"></i>&nbsp;Orange</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="teal"><i class="ui teal square icon"></i>&nbsp;Teal</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="pink"><i class="ui pink square icon"></i>&nbsp;Pink</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="purple"><i class="ui purple square icon"></i>&nbsp;Purple</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="violet"><i class="ui violet square icon"></i>&nbsp;Violet</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="brown"><i class="ui brown square icon"></i>&nbsp;Brown</div>
+                            <div class="ui mini item" style="font-size: 10px;font-weight: bold" data-value="blue"><i class="ui Blue square icon"></i>&nbsp;Blue</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <label style="font-size: 12px;font-weight: bold">Choose genes you want:</label>
+                    <select multiple="" class="search action dropdown" id="specific_genes">
+                        {% for i in source_genes %}
+                            <option value="{{ i }}">{{ i }}</option>
+                        {% empty %}
+                            No record.
+                        {% endfor %}
+                    </select>
+                    <button class="ui mini icon button" id="inquiry_specific_gene_button" data-content="Show the sub-network of genes you selected.">
+                        <b><i class="arrow alternate circle right outline icon"></i></b>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p>
+        <b>Note:</b><br><br>Here the <b style="color: orange">pentagons in orange</b> are cytokines involved in cytokine storm. <b style="color: royalblue;">Ellipses in blue</b> are other genes.<br>
+        <br>If you want to save the network you constructed, you can click <b><i class="download icon"></i>Export image</b>.
+    </p>
+    <br><div class="ui horizontal divider">CYTOSCAPE</div>
+    <div class="ui segment">
+        <div id="cy"></div>
+        <div class="ui active dimmer">
+            <div class="ui text loader">
+                Loading...
+            </div>
+        </div>
+        <br>
+        <div align="center">
+            <button class="ui mini black button" id="ex_img"><i class="download icon"></i>Export image</button>
+        </div>
+    </div>
+
+    <p id="graph_status" style="color: red;font-weight: bold"></p>
+    <div class="ui contrainer">
+        <h3 id="img_made_status"></h3>
+        <img class="ui fluid image" id="ex_png">
+    </div>
+
+    <script>
+    $('.ui.active.dimmer').hide()
+        $(document)
+            .ready(function() {
+                $('#style_dropdown')
+                    .dropdown({
+                        on: 'click'
+                    })
+                ;
+                $('#color_selector')
+                    .dropdown({
+                        on: 'click'
+                    })
+                ;
+                $('select.search.dropdown')
+                    .dropdown()
+                ;
+                cytoNet();
+                document.getElementById('color_selector').addEventListener('change', (e) => {
+                    let nodes = cy.$('node.highlight');
+                    nodes.forEach(node => {
+                        node.data('background_color', e.target.value);
+                        node.removeClass('highlight'); // need to remove class in order to display the updated background color
+                    })
+                })
+            })
+        ;
+
+    var button_pop_content = $('#inquiry_specific_gene_button').data('content')
+    $(".ui.mini.icon.button").popup(button_pop_content)
+    var gene_array = {{ genes | safe }}
+    var edge_array = {{ relationships | safe }}
+    var source_gene_array = {{ source_genes | safe }}
+    </script>
+    <script type="text/javascript" src="../static/js/network.js"></script>
+    <script type="text/javascript">
+
+        $('#ex_img').on('click', function () {
+            $('#img_made_status').html('Your image has been made:')
+            var fn =new save_img()
+        })
+
+    </script>
+    <script type="text/javascript">
+        var o,
+              X,
+              Y;
+        function getObject(obj,e){
+            o = obj;
+
+            document.all?o.setCapture() : window.captureEvents(Event.MOUSEMOVE);
+            X = e.clientX - parseInt(o.style.left);
+            Y = e.clientY - parseInt(o.style.top);
+
+        }
+        document.getElementById("box").onmousedown = function(e){
+            getObject(this,e||event);
+        };
+        document.onmousemove = function(dis){
+            if(!o){
+                return;
+            }
+            if(!dis){
+                dis = event ;
+            }
+            o.style.left = dis.clientX - X +"px";
+            o.style.top = dis.clientY - Y + "px";
+        };
+        document.onmouseup = function(){
+            if(!o){
+                return;
+            }
+            document.all?o.releaseCapture() : window.captureEvents(Event.MOUSEMOVE|Event.MOUSEUP)
+            o = '';
+        };
+    </script>
+{% endblock %}

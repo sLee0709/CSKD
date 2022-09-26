@@ -1,0 +1,391 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Case Search{% endblock %}
+
+{% block content %}
+
+    <style>
+     td{
+         font-size: 80%;
+     }
+    </style>
+    <div class="ui horizontal divider"><i class="search icon"></i>&nbsp;Case search</div>
+
+    <div class="ui container">
+        <form class="ui form" method="GET" action="{% url 'case_search_results' %}" data-csrf="{{ csrf_token }}" target="_blank">
+            <div class="two fields">
+                <div class="field">
+                    <label><b>CRS type</b></label>
+                    <select class="ui fluid search dropdown" name="crs_selected">
+                        <option value="">CRS type</option>
+                        {% for crs in crs_sets %}
+                            {% if crs != 'na' %}
+                                <option value="{{ crs }}">{{ crs }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label><b>Gender</b></label>
+                    <select class="ui fluid dropdown" name="gender">
+                        <option value="">All</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+            </div>
+            <div class="ui field">
+                <div class="ui accordion">
+                    <div class="title">
+                        <i class="dropdown icon"></i>
+                        <b>CSS causes</b>
+                    </div>
+                    <div class="content">
+                        <div class="three fields">
+                            <div class="fluid field">
+                                <label><b>Diseases</b></label>
+                                <select class="ui fluid search dropdown" name="cause_dis_search" >
+                                    <option value="">Diseases</option>
+                                    {% for dis in all_dis_set %}
+                                        {% if dis != 'na' %}
+                                            <option value="{{ dis }}">{{ dis }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="fluid field">
+                                <label><b>Pathogens</b></label>
+                                <select class="ui fluid search dropdown" name="cause_pat_search">
+                                    <option value="">Pathogens</option>
+                                    {% for pat in all_pat_set %}
+                                        {% if pat != 'na' %}
+                                            <option value="{{ pat }}">{{ pat }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="fluid field">
+                                <label><b>Therapies</b></label>
+                                <select class="ui fluid search dropdown" name="cause_the_search">
+                                    <option value="">Therapies</option>
+                                    {% for the in all_the_set %}
+                                        {% if the != 'na' %}
+                                            <option value="{{ the }}">{{ the }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui checkbox">
+                <input type="checkbox" id="show_parameters" name="show_parameters_checkbox" value="yes">
+                <label>Clinical Parameters</label>
+            </div><br><br>
+            <div hidden id="parameter_box">
+                <div class="ui field">
+                    <div class="ui accordion">
+                        <div class="title">
+                            <i class="dropdown icon"></i>
+                            <b>Infection-related Markers</b>
+                        </div>
+                        <div class="content">
+                            <div class="three fields">
+                                <div class="field">
+                                    <label><b>C-reactive Protein</b></label>
+                                    <select class="ui fluid dropdown" name="c_reactive_protein">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Erythrocyte sedimentation rate</b></label>
+                                    <select class="ui fluid dropdown" name="erythrocyte_sedimentation_rate">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Procalcitonin</b></label>
+                                    <select class="ui fluid dropdown" name="procalcitonin">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui field">
+                    <div class="ui accordion">
+                        <div class="title">
+                            <i class="dropdown icon"></i>
+                            <b>Blood Routine</b>
+                        </div>
+                        <div class="content">
+                            <div class="three fields">
+                                <div class="field">
+                                    <label><b>Leucocytes</b></label>
+                                    <select class="ui fluid dropdown" name="leucocytes">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Neutrophils</b></label>
+                                    <select class="ui fluid dropdown" name="neutrophils">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Lymphocytes</b></label>
+                                    <select class="ui fluid dropdown" name="lymphocytes">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="two fields">
+                                <div class="field">
+                                    <label><b>Platelets</b></label>
+                                    <select class="ui fluid dropdown" name="platelets">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Haemoglobin</b></label>
+                                    <select class="ui fluid dropdown" name="haemoglobin">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui field">
+                    <div class="ui accordion">
+                        <div class="title">
+                            <i class="dropdown icon"></i>
+                            <b>Coagulation Function</b>
+                        </div>
+                        <div class="content">
+                            <div class="three fields">
+                                <div class="field">
+                                    <label><b>Prothrombin time</b></label>
+                                    <select class="ui fluid dropdown" name="prothrombin_time">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Fibrinogen</b></label>
+                                    <select class="ui fluid dropdown" name="fibrinogen">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>D-dimer</b></label>
+                                    <select class="ui fluid dropdown" name="D-dimer">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="two fields">
+                                <div class="field">
+                                    <label><b>Activated partial thromboplastin time</b></label>
+                                    <select class="ui fluid dropdown" name="activated_partial_thromboplastin_time">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Thrombin time</b></label>
+                                    <select class="ui fluid dropdown" name="thrombin_time">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui field">
+                    <div class="ui accordion">
+                        <div class="title">
+                            <i class="dropdown icon"></i>
+                            <b>Blood Chemistry</b>
+                        </div>
+                        <div class="content">
+                            <div class="three fields">
+                                <div class="field">
+                                    <label><b>Creatinine</b></label>
+                                    <select class="ui fluid dropdown" name="creatinine">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Lactate dehydrogenase</b></label>
+                                    <select class="ui fluid dropdown" name="lactate_dehydrogenase">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Alanine transferase</b></label>
+                                    <select class="ui fluid dropdown" name="alanine_transferase">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="three fields">
+                                <div class="field">
+                                    <label><b>Aspartate transferase</b></label>
+                                    <select class="ui fluid dropdown" name="aspartate_transferase">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Triglyceride</b></label>
+                                    <select class="ui fluid dropdown" name="triglyceride">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><b>Serum ferritin</b></label>
+                                    <select class="ui fluid dropdown" name="serum_ferritin">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui field">
+                    <div class="ui accordion">
+                        <div class="title">
+                            <i class="dropdown icon"></i>
+                            <b>Immunological Test</b>
+                        </div>
+                        <div class="content">
+                            <div class="one field">
+                                <div class="field">
+                                    <label><b>Soluble CD25</b></label>
+                                    <select class="ui fluid dropdown" name="soluble_CD25">
+                                        <option value=""></option>
+                                        <option value="NM">NA</option>
+                                        <option value="Inc">Increased</option>
+                                        <option value="Dec">Decreased</option>
+                                        <option value="Norm">Normal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="ui mini black button" style="margin-left: 45%">Submit</button>
+        </form><br>
+
+
+    </div>
+
+    <script>
+    //dropdown function
+        $(document)
+            .ready(function() {
+                $('.dropdown')
+                    .dropdown({
+                        on: 'click',
+                        clearable:true
+                    })
+                ;
+                $('.accordion')
+                    .accordion()
+                ;
+            })
+        ;
+        $('#show_parameters').on('click', function () {
+           if($(this).is(':checked')){
+               $('#parameter_box').show()
+           }
+           else {
+               $('#parameter_box').hide()
+           }
+        });
+
+
+
+  </script>
+
+{% endblock %}

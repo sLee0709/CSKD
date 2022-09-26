@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Submit{% endblock %}
+
+{% block content %}
+    <div class="ui header">Submit Your Data</div><br>
+    <p>If you have any new data which are not included in our database, please fill the form below or contact us directly via: <a href="mailto:lishen0709@gmail.com">lishen0709@gmail.com</a></p>
+    <p><i><b style="font-size: 14px">Note:&nbsp;</b></i>Please <b>DO NOT</b> submit duplicate data. If you want to re-submit data which you already submitted, please contact us.</p>
+    <form method="POST", id="data_submission_form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="ui form">
+            <div class="ui three column grid">
+                <div class="row">
+                    <div class="five wide column"></div>
+                    <div class="six wide column" align="center">
+                        <div class="ui horizontal divider">
+                            <b>Data submission</b>
+                        </div>
+                    </div>
+                    <div class="five wide column"></div>
+                </div>
+                <div class="row">
+                    <div class="ui five wide column">
+                        <div class="ui required field" id="s_name">
+                            <label>Name:</label>
+                            <div class="ui mini fluid left icon input">
+                                <i class="user icon"></i>
+                                <input name="S_name" type="text" placeholder="Your Name..." value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui six wide column">
+                        <div class="field" id="s_organization">
+                            <label>Organization:</label>
+                            <div class="ui mini fluid left icon input">
+                                <i class="building icon"></i>
+                                <input name="S_organization" type="text" placeholder="Your Organization...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui five wide column">
+                        <div class="ui required field" id="s_email">
+                            <label>E-mail:</label>
+                            <div class="ui mini fluid left icon input">
+                                <i class="envelope icon"></i>
+                                <input name="S_email" type="text" placeholder="Your E-mail..." value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><br>
+            <div class="ui required fluid field">
+                <label>Cytokine names:</label>
+                <p><i>Multiple names can be separated by ','. If no cytokine names, please leave "Unknown".</i></p>
+                <input name="S_cytokines" type="text" placeholder="Names of cytokines you want to submit..." id="cyto_names" value="">
+            </div>
+            <div class="ui required fluid field">
+                <label>Published data? </label>
+                <p><i>If yes, please give at least one PMID. Multiple PMIDs can be separated by ','.</i></p>
+                    <input name="S_PMID" id="PMID" type="text" placeholder="If yes, please enter the PMID. Otherwise please enter 'None'" value="">
+            </div>
+            <div class="ui required field" id="s_description">
+                <label>Description:</label>
+                <textarea name="S_description" style="resize: none;" placeholder="Please describe the data you want to submit..."></textarea>
+            </div>
+
+        </div><br>
+        <div align="center">
+            <button class="ui mini black vertical animated button" id="submit_button">
+                <div class="hidden content"><i class="upload icon"></i></div>
+                <div class="visible content">Submit</div>
+            </button>
+        </div>
+    </form>
+
+    <p id="send_status" style="color: red;font-weight: bold;"></p><br>
+
+    <script>
+        $('#PMID').blur(function () {
+            var PMID = $(this).val();
+            if (PMID == ''){
+                $('#PMID').val('None');
+            }
+            else if (PMID.match(/^\s+$/)){
+                $('#PMID').val('None');
+            }
+        });
+        $('#cyto_names').blur(function () {
+            var c_names = $(this).val();
+            if (c_names == ''){
+                $('#cyto_names').val('Unknown');
+            }
+            else if (c_names.match(/^\s+$/)){
+                $('#cyto_names').val('Unknown');
+            }
+        });
+
+
+        $(document).on('submit', '#data_submission_form', function () {
+            var submit_name = $('#s_name input').val();
+            var submit_organization = $('#s_organization input').val();
+            var submit_mail = $('#s_email input').val();
+            var submit_des = $('#s_description textarea').val();
+            var submit_cytokine = $('#cyto_names').val();
+            var submit_PMID = $('#PMID').val();
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            if (submit_name == ''){
+                alert("Please enter your name!");
+                return;
+            }
+            else if (submit_name.match(/^\s+$/)){
+                $('#s_name input').val("");
+                alert("Please enter your name!");
+                return;
+            };
+            if (submit_mail == ''){
+                alert("Please enter your E-mail!");
+                return;
+            }
+            else if (submit_mail.match(/^\s+$/)){
+                $('#s_email input').val("");
+                alert("Please enter your E-mail!");
+                return;
+            };
+            if (submit_des == ''){
+                alert("Please enter description of your submission!");
+                return;
+            }
+            else if (submit_des.match(/^\s+$/)){
+                $('#s_description textarea').val("");
+                alert("Please enter description of your submission!");
+                return;
+            };
+            if (submit_cytokine == ''){
+                alert("Please enter names of cytokines you want to submit!");
+                return;
+            };
+            if (submit_PMID == ''){
+                alert("Please enter at least one PMID!");
+                return;
+            };
+
+            $.ajax({
+                type:'GET',
+                url:'./',
+                async : false,
+                data:{
+                    S_name:submit_name,
+                    S_organization:submit_organization,
+                    S_email:submit_mail,
+                    S_cytokines:submit_cytokine,
+                    S_PMID:submit_PMID,
+                    S_description:submit_des,
+                    csrfmiddlewaretoken:csrf
+                },
+                beforeSend:function () {
+                    $('#send_status').html('Sending...')
+                },
+                success:function (response) {
+                    var t = $.parseJSON(response)
+                    if(t.code == 1){
+                        alert(t.message)
+
+                    }
+                    if(t.code == -1){
+                        alert(t.message)
+
+                    }
+                },
+            })
+        })
+    </script>
+{% endblock %}

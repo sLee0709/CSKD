@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <title></title>
+
+    <style>
+        #cy{
+            width: auto;
+            height: 500px;
+            display: block;
+            background-color: #F5F5F5;
+        }
+            #box{position: absolute;}
+
+    </style>
+</head>
+<body>
+    <select id="color_selector">
+        <option value="red">red</option>
+        <option value="green">green</option>
+        <option value="orange">orange</option>
+    </select>
+    <div id="cy"></div>
+
+
+    <script>
+        var cy = cytoscape({
+            container: document.getElementById('cy'),
+
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(name)',
+                        'text-valign': 'center',
+                        'color':"white",
+                        'text-outline-color': 'orange',
+                        'text-outline-width': 2,
+                        'background-color': 'orange',
+                    }
+                },
+
+                {
+                    selector: 'edge',
+                    style: {
+                        'width':2,
+                        'line-color':'grey',
+                    }
+                },
+
+                {
+                    selector: 'node[background_color]',
+                    style: {
+                        'background-color': 'data(background_color)',
+                        'text-outline-color': 'data(background_color)',
+                    }
+                },
+
+                {
+                    selector: 'node.highlight',
+                        style: {
+                            'label': 'data(name)',
+                            'text-valign': 'center',
+                            'color':"white",
+                            'text-outline-color': 'red',
+                            'text-outline-width': 2,
+                            'background-color': 'red',
+                        }
+                },
+
+                {
+                    selector: 'node.semitransp',
+                    style:{ 'opacity': '0.5' }
+                },
+
+                ],
+
+            elements: {
+
+                nodes: [
+                    { data: { id: 'desktop', name: 'Cytoscape' } },
+                    { data: { id: 'test', name: 'Test'} },
+                    { data: { id: 'js', name: 'Cytoscape.js'} },
+                    ],
+                edges: [
+                    { data: { source: 'desktop', target: 'js' } },
+                    { data: { source: 'js', target: 'desktop' } }
+                    ]
+            },
+
+          layout: {
+            name: 'cose',
+            idealEdgeLength: 100,
+            nodeOverlap: 20,
+            refresh: 20,
+            fit: true,
+            padding: 30,
+            randomize: false,
+            componentSpacing: 100,
+            nodeRepulsion: 400000,
+            edgeElasticity: 100,
+            nestingFactor: 5,
+            gravity: 80,
+            numIter: 1000,
+            initialTemp: 200,
+            coolingFactor: 0.95,
+            minTemp: 1.0
+          },
+            minZoom:0.5,
+            maxZoom:3,
+            motionBlur: true,
+            wheelSensitivity: 0.05,
+        });
+        cy.on('tap', 'node', function(e){
+            var ele = e.target;
+            if(cy.elements('node[background-color:orange]')){
+                cy.elements().difference(ele.outgoers());
+                ele.addClass('highlight').outgoers().addClass('highlight');
+            }
+        });
+
+        cy.on('cxttap', 'node', function(e){
+            var ele = e.target;
+            ele.removeClass('highlight').outgoers().removeClass('highlight');
+        });
+
+        document.getElementById('color_selector').addEventListener('change', (e) => {
+            let nodes = cy.$('node.highlight');
+            nodes.forEach(node => {
+                node.data('background_color', e.target.value);
+                node.removeClass('highlight'); // need to remove class in order to display the updated background color
+            })
+        })
+        $('#submission').on('click', function () {
+            var csrf = $('#search_form').data('csrf');
+            var crs_list = new Array();
+            var gender = $('#gender_selection').val();
+            var age_from = $('#age_from').val();
+            var age_to = $('#age_to').val();
+            var cause_dis_list = new Array();
+            var cause_pat_list = new Array();
+            var cause_the_list = new Array();
+            var sym_list = new Array();
+            $('#sym_search option:selected').each(function () {
+                sym_list.push($(this).val());
+            });
+            $('#cause_dis_search option:selected').each(function () {
+                cause_dis_list.push($(this).val());
+            });
+            $('#cause_pat_searchion:selected').each(function () {
+                cause_pat_list.push($(this).val());
+            });
+            $('#cause_the_search option:selected').each(function () {
+                cause_the_list.push($(this).val());
+            });
+
+            $.ajax({
+                type:"GET",
+                url:"./",
+                data:{
+                    crs_list:crs_list,
+                    gender:gender,
+                    age_from:age_from,
+                    age_to:age_to,
+                    cause_the_list:cause_the_list,
+                    cause_dis_list:cause_dis_list,
+                    cause_pat_list:cause_pat_list,
+                    sym_list:sym_list,
+                    csrfmiddlewaretoken:csrf,
+                },
+                beforeSend:function(){
+                    $('.ui.active.dimmer').show();
+                },
+                success:function () {
+                    $('.ui.active.dimmer').hide();
+                },
+            })
+
+        });
+    </script>
+</body>

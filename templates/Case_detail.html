@@ -1,0 +1,672 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Case Information - {{ case_info.PMID }}{% endblock %}
+
+{% block content %}
+    <h2 align="center"></i>Case Information - {{ case_info.PMID }}</h2>
+    <div class="ui horizontal divider"></div>
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    Basic Information
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 20%"><b>CRS:</b></td>
+                <td>{{ case_info.CRS_type }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>PMID:</b></td>
+                <td>{{ case_info.PMID }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Year:</b></td>
+                <td>{{ case_info.Year }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Publication Type:</b></td>
+                <td>{{ case_info.Article_type }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Organism:</b></td>
+                {% if case_info.Organism == "CL" %}
+                    <td>Cell Line</td>
+                {% elif case_info.Organism == "MM" %}
+                    <td>Mus Musculus</td>
+                {% elif case_info.Organism == "HS" %}
+                    <td>Homo Sapiens</td>
+                {% elif case_info.Organism == "RN" %}
+                    <td>Rattus Norvegicus</td>
+                {% elif case_info.Organism == "OT" %}
+                    <td>Other</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Source:</b></td>
+                <td>{{ case_info.Source }}</td>
+            </tr>
+            {% if case_info.Organism == "CL" %}
+                <tr>
+                    <td style="width: 20%"><b>Cell Line Names:</b></td>
+                    <td>{{ case_info.Cell_lines }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td style="width: 20%"><b>Race/Nationality:</b></td>
+                <td>{{ case_info.Race }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Male:</b></td>
+                    {% if case_info.Male == 0 %}
+                        <td>NA</td>
+                    {% else %}
+                        <td>{{ case_info.Male }}</td>
+                    {% endif %}
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Female:</b></td>
+                {% if case_info.Female == 0 %}
+                    <td>NA</td>
+                {% else %}
+                    <td>{{ case_info.Female }}</td>
+                {% endif %}
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Total Number:</b></td>
+                    {% if case_info.Number == 0 %}
+                        <td>NA</td>
+                    {% else %}
+                        <td>{{ case_info.Number }}</td>
+                    {% endif %}
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Age:</b></td>
+                <td>{{ case_info.Age }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Experiments:</b></td>
+                <td>
+                    {% for exp in exps %}
+                        <a class="ui mini teal tag label">{{ exp }}</a>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    CRS Causes Information
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 20%"><b>Disease Causes:</b></td>
+                <td>
+                    {% if case_info.Disease %}
+                        {{ case_info.Disease }}
+                    {% else %}
+                        NA
+                    {% endif %}
+                </td>
+            </tr>
+            {% if case_info.Disease != "NA" %}
+                <tr>
+                    <td style="width: 20%"><b>Disease Stage:</b></td>
+                    <td>{{ case_info.Disease_stages }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td style="width: 20%"><b>Pathogens:</b></td>
+                <td>{{ case_info.Pathogens }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Therapy Causes:</b></td>
+                <td>{{ case_info.Immune_therapy_associated }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Drug Causes:</b></td>
+                <td>{{ case_info.Drug_associated }}</td>
+            </tr>
+            {% if case_info.Drug_associated != 'NA' %}
+                <tr>
+                    <td style="width: 20%"><b>Drug Dose:</b></td>
+                    <td>{{ case_info.Drug_associated_dose }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% if case_info.Article_type != "Case Report" %}
+
+        <br>
+        <table class="ui celled striped table">
+            <thead>
+                <tr>
+                    <th colspan="3">
+                        Cytokine Expression Change
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 20%"><b>Involved Cytokines:</b></td>
+                    <td>
+                        {% for cyto in cyto_invol %}
+                            <a class="ui mini label" href="../../cytokines/{{ cyto }}" target="_blank">{{ cyto }}</a>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% if case_info.Cytokines_involved_up != "NA" %}
+                    <tr>
+                        <td style="width: 20%"><b>Upregulated Cytokines:</b></td>
+                        <td>
+                            {% for cyto_up in cyto_in_up %}
+                                <a class="ui red mini label" href="../../cytokines/{{ cyto_up }}" target="_blank">{{ cyto_up }}</a>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if case_info.Cytokines_involved_down != "NA" %}
+                    <tr>
+                        <td style="width: 20%"><b>Downregulated Cytokines:</b></td>
+                        <td>
+                            {% for cyto_down in cyto_in_down %}
+                                <a class="ui green mini label" href="../../cytokines/{{ cyto_down }}" target="_blank">{{ cyto_down }}</a>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if case_info.Cytokines_involved_other != "NA" %}
+                    <tr>
+                        <td style="width: 20%"><b>Other Cytokines:</b></td>
+                        <td>
+                            {% for cyto_other in cyto_in_other %}
+                                <a class="ui mini label" href="../../cytokines/{{ cyto_other }}" target="_blank">{{ cyto_other }}</a>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    {% endif %}
+    <br>
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    Clinical Signs and Symptoms
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 20%"><b>Symptoms:</b></td>
+                <td>
+                    {% if case_info.Symptoms == 'NA' %}
+                        NA
+                    {% else %}
+                        {% for symptom in symptoms %}
+                            <a class="ui mini label" style="background-color: #FFB6C1;color: white">{{ symptom }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Diseases Induced:</b></td>
+                <td>
+                    {% if case_info.Disease_induced == 'NA' %}
+                        NA
+                    {% else %}
+                        {% for disease in disease_induced %}
+                            <a class="ui mini label" style="background-color: #FFB6C1;color: white">{{ disease }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% if case_info.Article_type == "Case Report" %}
+        <br>
+        <div class="ui styled fluid accordion">
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Diagnosis Tests
+            </div>
+            <div class="content">
+                <table class="ui celled striped table">
+                <thead>
+                    <tr>
+                        <th colspan="3">
+                            Infection-related Markers
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width: 20%"><b>C-reactive protein:</b></td>
+                        <td>
+                            {% if case_info.C_reactive_protein == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.C_reactive_protein == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.C_reactive_protein == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.C_reactive_protein == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                    <td style="width: 20%"><b>Erythrocyte sedimentation rate:</b></td>
+                    <td>
+                        {% if case_info.Erythrocyte_sedimentation_rate == 'NM' %}
+                            Not Mentioned
+                        {% elif case_info.Erythrocyte_sedimentation_rate == 'Inc' %}
+                            Increased <i class="ui red arrow up icon"></i>
+                        {% elif case_info.Erythrocyte_sedimentation_rate == 'Dec' %}
+                            Decreased <i class="ui green arrow down icon"></i>
+                        {% elif case_info.Erythrocyte_sedimentation_rate == 'Norm' %}
+                            Normal <i class="ui grey minus icon"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+                    <tr>
+                    <td style="width: 20%"><b>Procalcitonin:</b></td>
+                    <td>
+                        {% if case_info.Procalcitonin == 'NM' %}
+                            Not Mentioned
+                        {% elif case_info.Procalcitonin == 'Inc' %}
+                            Increased <i class="ui red arrow up icon"></i>
+                        {% elif case_info.Procalcitonin == 'Dec' %}
+                            Decreased <i class="ui green arrow down icon"></i>
+                        {% elif case_info.Procalcitonin == 'Norm' %}
+                            Normal <i class="ui grey minus icon"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+                <table class="ui celled striped table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                Blood Routine
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width: 20%"><b>Leucocytes:</b></td>
+                            <td>
+                                {% if case_info.Leucocytes == 'NM' %}
+                                    Not Mentioned
+                                {% elif case_info.Leucocytes == 'Inc' %}
+                                    Increased <i class="ui red arrow up icon"></i>
+                                {% elif case_info.Leucocytes == 'Dec' %}
+                                    Decreased <i class="ui green arrow down icon"></i>
+                                {% elif case_info.Leucocytes == 'Norm' %}
+                                    Normal <i class="ui grey minus icon"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Neutrophils:</b></td>
+                        <td>
+                            {% if case_info.Neutrophils == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Neutrophils == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Neutrophils == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Neutrophils == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Lymphocytes:</b></td>
+                        <td>
+                            {% if case_info.Lymphocytes == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Lymphocytes == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Lymphocytes == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Lymphocytes == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Platelets:</b></td>
+                        <td>
+                            {% if case_info.Platelets == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Platelets == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Platelets == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Platelets == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Haemoglobin:</b></td>
+                        <td>
+                            {% if case_info.Haemoglobin == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Haemoglobin == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Haemoglobin == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Haemoglobin == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="ui celled striped table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                Coagulation Function
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <td style="width: 20%"><b>Prothrombin time:</b></td>
+                        <td>
+                            {% if case_info.Prothrombin_time == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Prothrombin_time == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Prothrombin_time == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Prothrombin_time == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Activated partial thromboplastin time:</b></td>
+                        <td>
+                            {% if case_info.Activated_partial_thromboplastin_time == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Activated_partial_thromboplastin_time == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Activated_partial_thromboplastin_time == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Activated_partial_thromboplastin_time == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>D-dimer:</b></td>
+                        <td>
+                            {% if case_info.D_dimer == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.D_dimer == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.D_dimer == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.D_dimer == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                            <td style="width: 20%"><b>Fibrinogen:</b></td>
+                            <td>
+                                {% if case_info.Fibrinogen == 'NM' %}
+                                    Not Mentioned
+                                {% elif case_info.Fibrinogen == 'Inc' %}
+                                    Increased <i class="ui red arrow up icon"></i>
+                                {% elif case_info.Fibrinogen == 'Dec' %}
+                                    Decreased <i class="ui green arrow down icon"></i>
+                                {% elif case_info.Fibrinogen == 'Norm' %}
+                                    Normal <i class="ui grey minus icon"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Thrombin time:</b></td>
+                        <td>
+                            {% if case_info.Thrombin_time == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Thrombin_time == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Thrombin_time == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Thrombin_time == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="ui celled striped table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">
+                                Blood Chemistry
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width: 20%"><b>Creatinine:</b></td>
+                            <td>
+                                {% if case_info.Creatinine == 'NM' %}
+                                    Not Mentioned
+                                {% elif case_info.Creatinine == 'Inc' %}
+                                    Increased <i class="ui red arrow up icon"></i>
+                                {% elif case_info.Creatinine == 'Dec' %}
+                                    Decreased <i class="ui green arrow down icon"></i>
+                                {% elif case_info.Creatinine == 'Norm' %}
+                                    Normal <i class="ui grey minus icon"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Lactate dehydrogenase:</b></td>
+                        <td>
+                            {% if case_info.Lactate_dehydrogenase == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Lactate_dehydrogenase == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Lactate_dehydrogenase == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Lactate_dehydrogenase == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Alanine transferase:</b></td>
+                        <td>
+                            {% if case_info.Alanine_transferase == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Alanine_transferase == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Alanine_transferase == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Alanine_transferase == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Aspartate transferase:</b></td>
+                        <td>
+                            {% if case_info.Aspartate_transferase == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Aspartate_transferase == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Aspartate_transferase == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Aspartate_transferase == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Triglyceride:</b></td>
+                        <td>
+                            {% if case_info.Triglyceride == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Triglyceride == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Triglyceride == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Triglyceride == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                        <tr>
+                        <td style="width: 20%"><b>Serum ferritin:</b></td>
+                        <td>
+                            {% if case_info.Serum_ferritin == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Serum_ferritin == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Serum_ferritin == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Serum_ferritin == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="ui celled striped table">
+                    <thead>
+                        <tr>
+                            <th colspan="3">
+                                Immunological Tests
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <td style="width: 20%"><b>Soluble CD25:</b></td>
+                        <td>
+                            {% if case_info.Soluble_CD25 == 'NM' %}
+                                Not Mentioned
+                            {% elif case_info.Soluble_CD25 == 'Inc' %}
+                                Increased <i class="ui red arrow up icon"></i>
+                            {% elif case_info.Soluble_CD25 == 'Dec' %}
+                                Decreased <i class="ui green arrow down icon"></i>
+                            {% elif case_info.Soluble_CD25 == 'Norm' %}
+                                Normal <i class="ui grey minus icon"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    {% endif %}
+    <br>
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th colspan="3">
+                    Treatment
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 20%"><b>Drugs for Treatment:</b></td>
+                <td>
+                    {% if case_info.Drug_for_treatment %}
+                        {{ case_info.Drug_for_treatment }}
+                    {% else %}
+                        NA
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Treatment Dose:</b></td>
+                <td>{{ case_info.Treatment_dose }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Treatment Time:</b></td>
+                <td>{{ case_info.Treatment_time }}</td>
+            </tr>
+            <tr>
+                <td style="width: 20%"><b>Other Treatment:</b></td>
+                <td>{{ case_info.Other_treatments }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% if case_info.Article_type == 'Case Report' %}
+        <br>
+        <table class="ui celled striped table">
+            <thead>
+                <tr>
+                    <th colspan="3">
+                        Patient History
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 20%"><b>Disease History:</b></td>
+                    <td>{{ case_info.Disease_history }}</td>
+                </tr>
+                <tr>
+                    <td style="width: 20%"><b>Treatment History:</b></td>
+                    <td>{{ case_info.Drug_treatment_history }}</td>
+                </tr>
+                <tr>
+                    <td style="width: 20%"><b>Family History:</b></td>
+                    <td>{{ case_info.Family_history }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <table class="ui celled striped table">
+            <thead>
+                <tr>
+                    <th colspan="3">
+                        Prognosis
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 20%"><b>Discharge Time:</b></td>
+                    <td>{{ case_info.Discharge_time }}</td>
+                </tr>
+                <tr>
+                    <td style="width: 20%"><b>Adverse Events:</b></td>
+                    <td>{{ case_info.Adverse_event }}</td>
+                </tr>
+                <tr>
+                    <td style="width: 20%"><b>Survival Discription:</b></td>
+                    <td>{{ case_info.Survival_description }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <script>
+            $('.ui.styled.fluid.accordion').accordion();
+        </script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Functional Enrichment{% endblock %}
+
+{% block content %}
+    <div class="ui selection dropdown" id="enrich_geneset_selection">
+      <input type="hidden" name="gender">
+      <i class="dropdown icon"></i>
+      <div class="default text">Select Gene sets...</div>
+      <div class="menu">
+        <div class="ui mini item" data-value="family">Family</div>
+        <div class="ui mini item" data-value="virus">Virus</div>
+        <div class="ui mini item" data-value="disease">Disease</div>
+      </div>
+    </div>
+
+    <script>
+        $('#enrich_geneset_selection').dropdown()
+        $('.ui.mini.item').on('click', function () {
+
+        })
+    </script>
+{% endblock %}

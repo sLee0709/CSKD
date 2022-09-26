@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block head_title %}Case Search{% endblock %}
+
+{% block content %}
+
+    <style>
+        #cy{
+            width: auto;
+            height: 300px;
+            display: block;
+            background-color: #F5F5F5;
+
+        }
+            #box{position: absolute;}
+
+    </style>
+    <div class="ui horizontal divider"><i class="search icon"></i>&nbsp;Case search</div>
+
+    <div class="ui container">
+        <form class="ui form">
+            <div class="two fields">
+                <div class="field">
+                    <label><b>Cytokines</b></label>
+                    <select class="ui fluid search dropdown" multiple="">
+                        <option value="">Cytokine names</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label><b>Gender</b></label>
+                    <select class="ui fluid dropdown">
+                        <option value="">All</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+            </div>
+            <div class="ui field">
+                <label><b>CSS types</b></label>
+                <select class="ui fluid search dropdown" multiple="">
+                    <option value="">CSS types</option>
+                </select>
+            </div>
+            <div class="ui field">
+                <div class="ui accordion">
+                    <div class="title">
+                        <i class="dropdown icon"></i>
+                        <b>CSS causes</b>
+                    </div>
+                    <div class="content">
+                        <div class="three fields">
+                            <div class="fluid field">
+                                <label><b>Diseases</b></label>
+                                <select class="ui fluid search dropdown" multiple="">
+                                    <option value="">Diseases</option>
+                                </select>
+                            </div>
+                            <div class="fluid field">
+                                <label><b>Pathogens</b></label>
+                                <select class="ui fluid search dropdown" multiple="">
+                                    <option value="">Pathogens</option>
+                                </select>
+                            </div>
+                            <div class="fluid field">
+                                <label><b>Therapies</b></label>
+                                <select class="ui fluid search dropdown" multiple="">
+                                    <option value="">Therapies</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui field">
+                <label>Symptoms</label>
+                <select class="ui fluid search dropdown" multiple="">
+                    <option value="">Symptoms</option>
+                </select>
+            </div>
+            <div class="ui field">
+                <label>Treatment</label>
+                <select class="ui fluid search dropdown" multiple="">
+                    <option value="">Treatment</option>
+                </select>
+            </div>
+
+        </form><br>
+        <button class="ui mini black button" style="margin-left: 45%" id="submission">Submit</button>
+
+    </div>
+    <div class="ui horizontal divider" data-csrf="{{ csrf_token }}" id="data_divider"><i class="bar chart icon"></i>&nbsp;Data</div>
+    <div class="ui segment" >
+        <div class="ui active dimmer">
+            <div class="ui text loader">
+                Loading...
+            </div>
+        </div>
+        <div id="data_table">
+            <table class="ui celled sortable striped table">
+        <thead>
+            <th id="gene_filter">Genes</th>
+            <th id="family_filter">Protein Name</th>
+            <th id="virus_filter">Family</th>
+            <th>Network</th>
+            <th id="disease_filter">Links</th>
+
+        </thead>
+        <tbody>
+        {% for item in sets %}
+            <div class="ui mini modal" id="network">
+                <div class="header">Network for {{ item.Gene_name }}</div>
+                <div class="ui content">
+                    <div id="cy"></div>
+                    <div class="ui divider"></div>
+                    <div class="field" align="center">
+                        <button class="ui mini black button" onclick="window.open('../network_construction')">Complete Network</button>
+                    </div>
+                </div>
+
+            </div>
+            <tr align="center" id="data_content">
+                <td id="node_{{ item.Gene_name }}"><a href="/cytokines/{{ item.Gene_name }}">{{ item.Gene_name }}</a></td>
+                <td>{{ item.Protein_name }}</td>
+                <td>{{ item.Family_name }}</td>
+                <td>
+                    <input hidden value="{{ item.Target_name }}" id="{{ item.Gene_name }}">
+                    <button class="ui mini circular green icon button" onclick="
+                            var source = document.getElementById('node_{{ item.Gene_name }}').textContent
+                            var targets = document.getElementById('{{ item.Gene_name }}').value
+                            var source_n = {data:{id:source, name:source, shape:'pentagon', color:'#00CED1' } }
+                            var sp_nodes = new Array()
+                            sp_nodes.push(source_n)
+                            var tar_array = targets.split(',')
+                            var sp_edges = new Array()
+                            var all_source = {{ all_source | safe }}
+                            for (let n = 0;n<tar_array.length;n++
+                            ){
+                                var judge_code = all_source.indexOf(tar_array[n])
+                                if (judge_code == -1){
+                                    var each_node = {data:{id:tar_array[n], name:tar_array[n], shape:'ellipse', color:'#FA8072'}}
+                                    sp_nodes.push(each_node)
+                                }
+                                else {
+                                    console.log(judge_code)
+                                    var each_node = {data:{id:tar_array[n], name:tar_array[n], shape:'pentagon', color:'#00CED1'}}
+                                    sp_nodes.push(each_node)
+                                }
+                            }
+
+                            for (let n = 0;n<tar_array.length;n++
+                            ){
+                                var each_edge = {data: {id:source+'_'+tar_array[n], source:source, target: tar_array[n] }}
+                                sp_edges.push(each_edge)
+                            }
+                            generate_network(sp_nodes, sp_edges)
+                            $('#network').modal('show')
+                            " data-content="Cytoscape" id="Cytoscape"><i class="globe icon"></i></button>
+                    <button class="ui mini circular black icon button" data-content="Go to STRING" id="STRING" onclick="
+                            var source = document.getElementById('node_{{ item.Gene_name }}').textContent
+                            window.open('https://string-db.org/api/image/network?identifiers='+source)
+                    "><i class="spinner icon"></i></button>
+                </td>
+                <td><a href="https://www.genecards.org/cgi-bin/carddisp.pl?gene={{ item.Gene_name }}">GeneCards</a></td>
+
+            </tr>
+        {% empty %}
+            <tr>
+                <td>
+                    No data.
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+
+        </table>
+            <div class="ui two column grid">
+            <div class="nine wide column"></div>
+            <div class="seven wide column">
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if error_msg %}
+                            <span>1 of 1</span>
+                        {% else %}
+                            {% if sets.number == 1 %}
+                                <button class="ui disabled icon button">
+                                    <i class="angle double left icon"></i>
+                                </button>
+                            {% else %}
+                                <button class="ui icon button" id="first">
+                                    <i class="angle double left icon"></i>
+                                </button>
+                            {% endif %}
+                            {% if sets.has_previous %}
+                                <button class="ui icon button" id="previous">
+                                    <i class="angle left icon"></i>
+                                </button>
+                            {% else %}
+                                <button class="ui disabled icon button">
+                                    <i class="angle left icon"></i>
+                                </button>
+                            {% endif %}
+                            <span class="current">
+
+                                <input value="{{ sets.number }}" id="page_num" onkeyup="if(event.keyCode==13){
+                                        var input_page = $(this).val()
+                                        $.ajax({
+                                            type:'GET',
+                                            url:'./',
+                                            data:{
+                                                page:input_page
+                                            },
+                                            beforeSend:function() {
+                                              $('.ui.active.dimmer').show();
+                                            },
+                                            success:function(data) {
+                                              $('.ui.active.dimmer').hide();
+                                              var new_table = $('#data_table', data);
+                                              $('#data_table').html(new_table);
+                                            }
+                                        })
+                                }" style="width: 10%;text-align: center"> of {{ sets.paginator.num_pages }}</span>
+
+                            {% if sets.has_next %}
+                                <button class="ui icon button" id="next">
+                                    <i class="angle right icon"></i>
+                                </button>
+                            {% else %}
+                                <button class="ui disabled icon button">
+                                    <i class="angle right icon"></i>
+                                </button>
+                            {% endif %}
+
+                            {% if sets.number == sets.paginator.num_pages %}
+                                <button class="ui disabled icon button">
+                                    <i class="angle double right icon"></i>
+                                </button>
+                            {% else %}
+                                <button class="ui icon button" id="last">
+                                    <i class="angle double right icon"></i>
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+            <script>
+      //pagination
+    $('#next').on('click', function () {
+        {% if sets.has_next %}
+            page={{ sets.next_page_number }}
+        {% endif %}
+        $.ajax({
+            type:"GET",
+            url:'./',
+            data:{
+                page:page
+            },
+            beforeSend:function(){
+                $('.ui.active.dimmer').show();
+            },
+            success: function (data) {
+                $('.ui.active.dimmer').hide();
+                var new_table = $('#data_table', data)
+                $('#data_table').html(new_table)
+
+
+            }
+        })
+    })
+    $('#last').on('click', function () {
+        {% if sets.has_next %}
+            page={{ sets.paginator.num_pages }}
+        {% endif %}
+        $.ajax({
+            type:"GET",
+            url:'./',
+            data:{
+                page:page
+            },
+            beforeSend:function(){
+                $('.ui.active.dimmer').show();
+            },
+            success: function (data) {
+                $('.ui.active.dimmer').hide();
+                var new_table = $('#data_table', data)
+                $('#data_table').html(new_table)
+            }
+        })
+    })
+    $('#first').on('click', function () {
+        {% if sets.has_previous %}
+            page=1
+        {% endif %}
+        $.ajax({
+            type:"GET",
+            url:'./',
+            data:{
+                page:page
+            },
+            beforeSend:function(){
+                $('.ui.active.dimmer').show();
+            },
+            success: function (data) {
+                $('.ui.active.dimmer').hide();
+                var new_table = $('#data_table', data)
+                $('#data_table').html(new_table)
+            }
+        })
+    })
+    $('#previous').on('click', function () {
+        {% if sets.has_previous %}
+            page={{ sets.previous_page_number }}
+        {% endif %}
+        $.ajax({
+            type:"GET",
+            url:'./',
+            data:{
+                page:page
+            },
+            beforeSend:function(){
+                $('.ui.active.dimmer').show();
+            },
+            success: function (data) {
+                $('.ui.active.dimmer').hide();
+                var new_table = $('#data_table', data)
+                $('#data_table').html(new_table)
+            }
+        })
+    })
+
+  </script>
+        </div>
+        <br>
+
+    </div>
+
+
+    <script>
+    //dropdown function
+        $(document)
+            .ready(function() {
+                $('.dropdown')
+                    .dropdown({
+                        on: 'click',
+                        clearable:true
+                    })
+                ;
+                $('.accordion')
+                    .accordion()
+                ;
+            })
+        ;
+        $('.ui.active.dimmer').hide();
+
+        $('#submission').on('click', function () {
+            var syms = $('#virus').val()
+            alert(syms)
+        })
+
+        $('.ui.black.icon.button').popup($('.ui.black.icon.button').data('content'))
+        $('.ui.grey.icon.button').popup($('.ui.grey.icon.button').data('content'))
+
+
+        $('#inquiry_gene').on('click', function () {
+            var gene_selected = $('#gene_list').val();
+            var gene_array = new Array(gene_selected);
+            var csrf = $('#data_divider').data('csrf')
+            $.ajax({
+                type:'GET',
+                url:'./',
+                traditional:true,
+                data:{
+                    action:'filter_gene',
+                    async:false,
+                    inquiry_list:gene_array,
+                    csrfmiddlewaretoken:csrf
+                },
+                beforeSend:function () {
+                    $('.ui.active.dimmer').show()
+                },
+                success:function (response) {
+                    $('.ui.active.dimmer').hide()
+                    var t = $.parseJSON(response)
+                    if (t.code == -1){
+                        alert(t.message)
+                        return
+                    };
+                    if(t.code == 1){
+                        console.log(t.message)
+                    }
+                }
+            })
+        })
+  </script>
+  <script type="text/javascript" src="../static/js/mini_network.js"></script>
+{% endblock %}
